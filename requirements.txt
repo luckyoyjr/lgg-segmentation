@@ -1,10 +1,12 @@
+--index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://pypi.org/simple
 streamlit>=1.33
-torch==2.3.1+cpu
-torchvision==0.18.1+cpu
---extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.9.0+cpu
+torchvision==0.24.0
 numpy
 pillow
 opencv-python-headless
 scikit-image
 matplotlib
 pandas
+huggingface-hub
