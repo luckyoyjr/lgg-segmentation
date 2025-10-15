@@ -11,5 +11,8 @@ matplotlib
 pandas
 huggingface-hub
 scikit-learn==1.5.2
+pennylane==0.38.0
+pennylane-lightning==0.38.0
+
 
 
