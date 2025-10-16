@@ -272,8 +272,36 @@ def load_image_to_array(file) -> np.ndarray:
 
 
 def preprocess(img: np.ndarray) -> torch.Tensor:
-    if img.ndim != 2: raise ValueError(f"Expected a single-channel 2D image, got shape {img.shape}")
-    return torch.from_numpy(img[None, None, ...]).to(DEVICE)
+    if img.ndim != 2: 
+        raise ValueError(f"Expected a single-channel 2D image, got shape {img.shape}")
+    
+    # 1. Convert to PyTorch tensor (C, H, W)
+    x = torch.from_numpy(img[None, None, ...]).to(DEVICE) # (1, 1, H, W)
+    
+    # 2. Dynamic Padding Fix for U-Net compatibility
+    # Ensure H and W are divisible by 16 for robust U-Net operation
+    PADD_FACTOR = 16 
+    H, W = x.shape[2:]
+    
+    # Calculate padding needed
+    pad_h = (PADD_FACTOR - (H % PADD_FACTOR)) % PADD_FACTOR
+    pad_w = (PADD_FACTOR - (W % PADD_FACTOR)) % PADD_FACTOR
+    
+    # Pad symmetrically (left/right, top/bottom)
+    # (padding_left, padding_right, padding_top, padding_bottom)
+    if pad_h > 0 or pad_w > 0:
+        # Use asymmetric padding to keep the original image centered
+        padding_l = pad_w // 2
+        padding_r = pad_w - padding_l
+        padding_t = pad_h // 2
+        padding_b = pad_h - padding_t
+        
+        x = F.pad(x, (padding_l, padding_r, padding_t, padding_b), mode='constant', value=0)
+        
+        # Optional: Log the change for debugging
+        # st.caption(f"Padded image from ({H}, {W}) to ({H + pad_h}, {W + pad_w})")
+        
+    return x
 
 
 # -----------------
@@ -472,5 +500,6 @@ with left:
             st.success("Done!")
     else:
         st.info("Upload an image (and optional GT), choose a mode, and click *Run*.")
+
 
 
