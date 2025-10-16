@@ -60,7 +60,7 @@ class DoubleConv_App(nn.Module):
 class AttentionGate_App(nn.Module):
     """
     Returns the gated feature map. Attention mask is captured via a hook on self.psi.
-    Includes a fix to handle spatial size mismatches (e.g., 126 vs 127) by 
+    Includes a fix to handle spatial size mismatches (e.g., 218 vs 219) by 
     resizing the skip connection feature map (x_out) to match the attention signal (g_out).
     """
 
@@ -79,11 +79,9 @@ class AttentionGate_App(nn.Module):
 
         # 2. FIX: Check for size mismatch and interpolate the larger tensor (x_out) 
         # to match the size of the attention signal (g_out).
+        # This fixes mismatches in both Height (dim 2) and Width (dim 3).
         if x_out.shape[2:] != g_out.shape[2:]:
             H_g, W_g = g_out.shape[2:]
-            # Use bilinear for smooth interpolation, or nearest if the original model
-            # used cropping (F.interpolate(..., mode='nearest') is often a simple 
-            # replacement for cropping when the mismatch is small).
             x_out = F.interpolate(x_out, size=(H_g, W_g), mode='nearest') 
 
         # 3. Perform the element-wise addition (this is where the error occurred)
@@ -91,7 +89,6 @@ class AttentionGate_App(nn.Module):
         
         # 4. Final gating
         return x * self.psi(psi_out)
-
 
 class QuantumBottleneck_App(nn.Module):
     """EXACTLY MATCHES the training QuantumBottleneck class."""
@@ -475,4 +472,5 @@ with left:
             st.success("Done!")
     else:
         st.info("Upload an image (and optional GT), choose a mode, and click *Run*.")
+
 
